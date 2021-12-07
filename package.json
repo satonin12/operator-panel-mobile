@@ -11,6 +11,8 @@
     "flow": "flow"
   },
   "dependencies": {
+    "@react-native-firebase/app": "^13.1.0",
+    "@react-native-firebase/database": "^13.1.0",
     "@sentry/react-native": "^3.2.6",
     "prop-types": "^15.7.2",
     "react": "17.0.2",

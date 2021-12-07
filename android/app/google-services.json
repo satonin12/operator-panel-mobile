@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "16186507247",
+    "firebase_url": "https://vsatonin-intership-login-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "vsatonin-intership-login",
+    "storage_bucket": "vsatonin-intership-login.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:16186507247:android:6f81148de28c33c8d7c01a",
+        "android_client_info": {
+          "package_name": "com.intershipvsatoninmobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "16186507247-mcbt910eu2lc9lgr0lpv66anvf6a7lpd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBesrNArHwvYVboXLptsZangIfPCuB22bc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "16186507247-mcbt910eu2lc9lgr0lpv66anvf6a7lpd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

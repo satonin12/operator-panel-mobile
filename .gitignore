@@ -60,3 +60,10 @@ buck-out/
 
 package-lock.json
 
+*.java
+*.gradle
+
+ios/
+android/
+
+.gitignore

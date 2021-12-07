@@ -17,7 +17,13 @@
     "@sentry/react-native": "^3.2.6",
     "prop-types": "^15.7.2",
     "react": "17.0.2",
-    "react-native": "0.66.3"
+    "react-native": "0.66.3",
+    "react-native-gesture-handler": "^2.1.0",
+    "react-native-reanimated": "^2.2.4",
+    "react-native-router-flux": "^4.3.1",
+    "react-native-safe-area-context": "^3.3.2",
+    "react-native-safe-area-view": "^1.1.1",
+    "react-native-screens": "^3.10.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

@@ -2,7 +2,11 @@ import React from 'react'
 import type { Node } from 'react'
 import * as Sentry from '@sentry/react-native'
 
-import AppRouter from './router/AppRouter'
+import {
+  NativeBaseProvider
+} from 'native-base';
+import AppRouter from "./router/AppRouter";
+
 
 Sentry.init({
   dsn: 'https://19cdb36b586d4e97bb1ae5046ff65564@o1085610.ingest.sentry.io/6096605',
@@ -13,9 +17,9 @@ Sentry.init({
 
 const App: () => Node = () => {
   return (
-    <>
-      <AppRouter />
-    </>
+    <NativeBaseProvider>
+      <AppRouter/>
+    </NativeBaseProvider>
   )
 }
 

@@ -1,9 +1,16 @@
 import React from 'react'
-import type { Node } from 'react'
-import { Text } from 'react-native'
+import {
+  Box
+} from 'native-base'
+import { StartForm } from "../../components/forms/StartForm/StartForm";
 
-const HomePage: () => Node = () => {
-  return <Text>Hello HomePage!!))!</Text>
+export const HomePage = () => {
+  return (
+    <Box
+      width='100%'
+      padding='10px'
+    >
+      <StartForm/>
+    </Box>
+  )
 }
-
-export default HomePage

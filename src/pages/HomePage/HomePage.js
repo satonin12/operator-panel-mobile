@@ -8,7 +8,7 @@ export const HomePage = () => {
   return (
     <Box
       width='100%'
-      padding='10px'
+      padding='15px'
     >
       <StartForm/>
     </Box>

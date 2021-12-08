@@ -83,7 +83,7 @@ export const StartForm = () => {
                   {optionRenderList}
                 </Select>
               </VStack>
-      
+              
               <VStack>
                 <FormControl.Label>Выберите подтему обращения: </FormControl.Label>
                 <Select
@@ -101,7 +101,7 @@ export const StartForm = () => {
                   {subOptionRenderList}
                 </Select>
               </VStack>
-      
+              
               <Button onPress={() => console.log('hello world')} colorScheme='blue'>Войти в чат</Button>
             </Stack>
           )

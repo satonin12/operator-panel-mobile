@@ -63,11 +63,14 @@ export const StartForm = ({ formik }) => {
       ) : (
         <Stack space={5}>
           <Stack>
-            <FormControl isRequired isInvalid={'name' in formik.errors}>
+            <FormControl
+              isRequired
+              isInvalid={'name' in formik.errors}
+            >
               <FormControl.Label>Введите имя: </FormControl.Label>
               <Input
-                onChangeText={formik.handleChange('name')}
                 value={formik.values.name}
+                onChangeText={formik.handleChange('name')}
               />
               {formik.touched.name && formik.errors.name && (
                 <FormControl.ErrorMessage>
@@ -81,14 +84,14 @@ export const StartForm = ({ formik }) => {
             <FormControl isRequired isInvalid={'topics' in formik.errors}>
               <FormControl.Label>Выберите тему обращения: </FormControl.Label>
               <Select
+                mt={1}
                 minWidth="200"
-                accessibilityLabel="Choose Service"
-                placeholder="Выберите тему"
                 _selectedItem={{
                   bg: 'teal.600',
                   endIcon: <CheckIcon size="5" />
                 }}
-                mt={1}
+                placeholder="Выберите тему"
+                accessibilityLabel="Choose Service"
                 onValueChange={(itemValue) =>
                   formik.setFieldValue('topics', itemValue)
                 }
@@ -104,20 +107,22 @@ export const StartForm = ({ formik }) => {
           </VStack>
 
           <VStack>
-            <FormControl isRequired isInvalid={'subtopics' in formik.errors}>
+            <FormControl
+              isRequired
+              isInvalid={'subtopics' in formik.errors}
+            >
               <FormControl.Label>
                 Выберите подтему обращения:{' '}
               </FormControl.Label>
               <Select
-                // selectedValue={service}
+                mt={1}
                 minWidth="200"
-                accessibilityLabel="Choose Service"
                 placeholder="Выберите подтему"
                 _selectedItem={{
                   bg: 'teal.600',
                   endIcon: <CheckIcon size="5" />
                 }}
-                mt={1}
+                accessibilityLabel="Choose Service"
                 onValueChange={(itemValue) =>
                   formik.setFieldValue('subtopics', itemValue)
                 }

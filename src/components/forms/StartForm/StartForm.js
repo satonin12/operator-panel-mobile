@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react'
 import {
   Input,
   Stack,
@@ -7,106 +7,140 @@ import {
   Select,
   VStack,
   CheckIcon,
-  Button, Spinner, Center,
-} from "native-base";
-import database from '@react-native-firebase/database';
+  Button,
+  Spinner,
+  Center
+} from 'native-base'
+import database from '@react-native-firebase/database'
+import PropTypes from 'prop-types'
 
-export const StartForm = () => {
-  
+export const StartForm = ({ formik }) => {
   const [optionList, setOptionList] = useState([])
   const [subOptionList, setSubOptionList] = useState([])
-  
+
   // ui state
   const [loading, setLoading] = useState(false)
-  
+
   const getTopicsAndSubTopics = async () => {
     try {
       setLoading(true)
       await database()
-      .ref('topics/')
-      .once('value')
-      .then(snapshot => {
-        setOptionList(snapshot.val().topics)
-        setSubOptionList(snapshot.val().subtopics)
-        setLoading(false)
-      });
+        .ref('topics/')
+        .once('value')
+        .then((snapshot) => {
+          setOptionList(snapshot.val().topics)
+          setSubOptionList(snapshot.val().subtopics)
+          setLoading(false)
+        })
     } catch (e) {
-      throw new Error({ ...e, path: 'getTopicsAndSubTopics-firebase-exception' });
+      throw new Error({
+        ...e,
+        path: 'getTopicsAndSubTopics-firebase-exception'
+      })
     }
   }
-  
+
   useEffect(() => {
     getTopicsAndSubTopics()
   }, [])
-  
+
   // ! JSX Variables block
-  
+
   const optionRenderList = optionList.map((option, index) => (
     <Select.Item key={index} label={option.label} value={option.value} />
   ))
-  
+
   const subOptionRenderList = subOptionList.map((option, index) => (
     <Select.Item key={index} label={option.label} value={option.value} />
   ))
-  
+
   return (
     <Box>
-      <FormControl>
-        {loading
-          ? (
-            <Center
-              h='100%'
-              w='100%'
-            >
-              <Spinner color="cyan.500" size="lg" />
-            </Center>
-          )
-          : (
-            <Stack space={5}>
-              <Stack>
-                <FormControl.Label>Введите имя: </FormControl.Label>
-                <Input variant="underlined" p={2} placeholder="" />
-              </Stack>
-              <VStack>
-                <FormControl.Label>Выберите тему обращения: </FormControl.Label>
-                <Select
-                  minWidth="200"
-                  accessibilityLabel="Choose Service"
-                  placeholder="Выберите тему"
-                  _selectedItem={{
-                    bg: 'teal.600',
-                    endIcon: <CheckIcon size="5" />
-                  }}
-                  mt={1}
-                  // onValueChange={(itemValue) => setService(itemValue)}
-                >
-                  {optionRenderList}
-                </Select>
-              </VStack>
-              
-              <VStack>
-                <FormControl.Label>Выберите подтему обращения: </FormControl.Label>
-                <Select
-                  // selectedValue={service}
-                  minWidth="200"
-                  accessibilityLabel="Choose Service"
-                  placeholder="Выберите подтему"
-                  _selectedItem={{
-                    bg: 'teal.600',
-                    endIcon: <CheckIcon size="5" />
-                  }}
-                  mt={1}
-                  // onValueChange={(itemValue) => setService(itemValue)}
-                >
-                  {subOptionRenderList}
-                </Select>
-              </VStack>
-              
-              <Button onPress={() => console.log('hello world')} colorScheme='blue'>Войти в чат</Button>
-            </Stack>
-          )
-        }
-      </FormControl>
+      {loading ? (
+        <Center h="100%" w="100%">
+          <Spinner color="cyan.500" size="lg" />
+        </Center>
+      ) : (
+        <Stack space={5}>
+          <Stack>
+            <FormControl isRequired isInvalid={'name' in formik.errors}>
+              <FormControl.Label>Введите имя: </FormControl.Label>
+              <Input
+                onChangeText={formik.handleChange('name')}
+                value={formik.values.name}
+              />
+              {formik.touched.name && formik.errors.name && (
+                <FormControl.ErrorMessage>
+                  {formik.errors.name}
+                </FormControl.ErrorMessage>
+              )}
+            </FormControl>
+          </Stack>
+
+          <VStack>
+            <FormControl isRequired isInvalid={'topics' in formik.errors}>
+              <FormControl.Label>Выберите тему обращения: </FormControl.Label>
+              <Select
+                minWidth="200"
+                accessibilityLabel="Choose Service"
+                placeholder="Выберите тему"
+                _selectedItem={{
+                  bg: 'teal.600',
+                  endIcon: <CheckIcon size="5" />
+                }}
+                mt={1}
+                onValueChange={(itemValue) =>
+                  formik.setFieldValue('topics', itemValue)
+                }
+              >
+                {optionRenderList}
+              </Select>
+              {formik.touched.topics && formik.errors.topics && (
+                <FormControl.ErrorMessage>
+                  {formik.errors.topics}
+                </FormControl.ErrorMessage>
+              )}
+            </FormControl>
+          </VStack>
+
+          <VStack>
+            <FormControl isRequired isInvalid={'subtopics' in formik.errors}>
+              <FormControl.Label>
+                Выберите подтему обращения:{' '}
+              </FormControl.Label>
+              <Select
+                // selectedValue={service}
+                minWidth="200"
+                accessibilityLabel="Choose Service"
+                placeholder="Выберите подтему"
+                _selectedItem={{
+                  bg: 'teal.600',
+                  endIcon: <CheckIcon size="5" />
+                }}
+                mt={1}
+                onValueChange={(itemValue) =>
+                  formik.setFieldValue('subtopics', itemValue)
+                }
+              >
+                {subOptionRenderList}
+              </Select>
+              {formik.touched.subtopics && formik.errors.subtopics && (
+                <FormControl.ErrorMessage>
+                  {formik.errors.subtopics}
+                </FormControl.ErrorMessage>
+              )}
+            </FormControl>
+          </VStack>
+
+          <Button onPress={() => formik.handleSubmit()} colorScheme="blue">
+            Войти в чат
+          </Button>
+        </Stack>
+      )}
     </Box>
   )
+}
+
+StartForm.propTypes = {
+  formik: PropTypes.object
 }

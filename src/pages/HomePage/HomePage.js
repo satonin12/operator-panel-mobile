@@ -53,6 +53,7 @@ export const HomePage = () => {
         }
       })
     
+    // переводим на экран ожидания очереди
     Actions.queue()
   }
 

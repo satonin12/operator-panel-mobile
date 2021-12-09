@@ -136,6 +136,24 @@ export const StartForm = ({ formik }) => {
               )}
             </FormControl>
           </VStack>
+  
+          <Stack>
+            <FormControl
+              isRequired
+              isInvalid={'message' in formik.errors}
+            >
+              <FormControl.Label>Введите суть обращения: </FormControl.Label>
+              <Input
+                value={formik.values.message}
+                onChangeText={formik.handleChange('message')}
+              />
+              {formik.touched.message && formik.errors.message && (
+                <FormControl.ErrorMessage>
+                  {formik.errors.message}
+                </FormControl.ErrorMessage>
+              )}
+            </FormControl>
+          </Stack>
 
           <Button onPress={() => formik.handleSubmit()} colorScheme="blue">
             Войти в чат

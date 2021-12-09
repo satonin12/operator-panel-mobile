@@ -17,8 +17,15 @@ const SubTopicsValidation= Yup.object().shape({
   .required('Обязательное поле')
 })
 
+const MessageValidation= Yup.object().shape({
+  message: Yup.string()
+  .required('Обязательное поле')
+  .min(4, 'Сообщение слишком короткое!')
+})
+
 export const StartFormSchema = Yup.object()
   .shape({})
   .concat(NameValidation)
   .concat(TopicsValidation)
   .concat(SubTopicsValidation)
+  .concat(MessageValidation)

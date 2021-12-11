@@ -123,9 +123,10 @@ export const StartForm = ({ formik }) => {
                   endIcon: <CheckIcon size="5" />
                 }}
                 accessibilityLabel="Choose Service"
-                onValueChange={(itemValue) =>
+                onValueChange={(itemValue) => {
+                  console.log(itemValue)
                   formik.setFieldValue('subtopics', itemValue)
-                }
+                }}
               >
                 {subOptionRenderList}
               </Select>

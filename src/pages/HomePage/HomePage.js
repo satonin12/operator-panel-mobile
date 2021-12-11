@@ -4,11 +4,15 @@ import { useFormik } from 'formik'
 import { firebase } from '@react-native-firebase/database'
 import uuid from 'react-native-uuid'
 import {Actions} from 'react-native-router-flux'
+import { useDispatch } from 'react-redux'
 
 import { StartForm } from '../../components/forms/StartForm/StartForm'
 import { StartFormSchema } from '../../utils/validation'
 
 export const HomePage = () => {
+  
+  const dispatch = useDispatch()
+  
   const createDialogFromBack = async (values) => {
     console.log('зашли сюда')
     let lengthActiveDialogs
@@ -52,7 +56,8 @@ export const HomePage = () => {
           console.log('добавление прошло удачно - смотри firebase')
         }
       })
-    
+  
+    dispatch({type: 'SAVE_DIALOG', payload: { ...newDialog }})
     // переводим на экран ожидания очереди
     Actions.queue()
   }

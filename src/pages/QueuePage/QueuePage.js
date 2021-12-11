@@ -6,6 +6,7 @@ import { Box, Button, Center, Flex, Heading, Text, VStack } from 'native-base'
 
 import SmileLottie from '../../assets/lottie/smile.json'
 import database from "@react-native-firebase/database";
+import useInterval from "../../hooks/useInterval";
 
 export const QueuePage = () => {
   
@@ -30,9 +31,24 @@ export const QueuePage = () => {
     }
   }
   
+  // const checkDialogFromFirebase = () => {
+  //   return new Promise(resolve => {
+  //     database()
+  //       .ref()
+  //   })
+  // }
+  
+  const checkStartDialog = async () => {
+    // const isStartDialog = await checkDialogFromFirebase()
+  }
+  
   useEffect(() => {
     getQueueLength()
   }, [])
+  
+  useInterval(() => {
+    checkStartDialog()
+  }, 30000) // 30 sec.
   
   // ! JSX Variables Block
   // время умножается на кол-во человек в очереди, 1 человек в очереди = 5 минут
@@ -44,7 +60,6 @@ export const QueuePage = () => {
         <Heading mt="10" w='100%'>
           <VStack w='100%' height='auto' >
             <Text fontSize="2xl" color='black'>Вы в очереди на {queueLength} месте</Text>
-            {/*<Text fontSize="md" color='gray' w={250} >Вам ответят приблизительно через 10 минут и 10 секунд</Text>*/}
             <Text fontSize="md" color='gray' w={250} >Вам ответят приблизительно через {durationTime}</Text>
           </VStack>
         </Heading>

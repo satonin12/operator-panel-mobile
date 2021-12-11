@@ -46,10 +46,10 @@ const pReducer = persistReducer(rootPersistConfig, rootReducer)
 const sagaMiddleware = createSagaMiddleware()
 
 // create a redux store with our reducer above and middleware
-const composeEnhancers = composeWithDevTools({ realtime: true, port: 8081 });
+// const composeEnhancers = composeWithDevTools({ realtime: true, port: 8081 });
 const store = createStore(
   pReducer,
-  composeEnhancers(applyMiddleware(sagaMiddleware),
+  composeWithDevTools(applyMiddleware(sagaMiddleware),
   ));
 
 const persistor = persistStore(store)

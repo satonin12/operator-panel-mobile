@@ -1,17 +1,23 @@
-import React from 'react'
+import React, { useEffect } from "react";
 import { Box } from 'native-base'
 import { useFormik } from 'formik'
 import { firebase } from '@react-native-firebase/database'
 import uuid from 'react-native-uuid'
 import {Actions} from 'react-native-router-flux'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { StartForm } from '../../components/forms/StartForm/StartForm'
 import { StartFormSchema } from '../../utils/validation'
 
 export const HomePage = () => {
-  
+  const state = useSelector((state) => state.dialog)
   const dispatch = useDispatch()
+  
+  console.log(state)
+
+  useEffect(() => {
+    dispatch({type: 'CLEAR_STATE'})
+  }, [])
   
   const createDialogFromBack = async (values) => {
     console.log('зашли сюда')

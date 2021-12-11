@@ -8,7 +8,7 @@ const AppRouter: () => Node = () => {
   <Router>
     <Stack key="root">
       {Routes.map((route) => (
-        <Scene key={route.key} component={route.component} title={route.title} />
+        <Scene key={route.key} component={route.component} title={route.title} back={route?.back} />
       ))}
     </Stack>
   </Router>

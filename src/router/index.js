@@ -16,6 +16,7 @@ export const Routes = [
   {
     key: 'dialog',
     title: 'Диалог',
+    back: false,
     component: DialogPage
   }
 ]

@@ -1,4 +1,4 @@
-import React from 'react'
+import React  from "react";
 import type { Node } from 'react'
 // import * as Sentry from '@sentry/react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,12 +8,13 @@ import { persistReducer, persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 import { composeWithDevTools } from 'remote-redux-devtools';
-import { Provider } from 'react-redux'
+import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react'
 
 import { dialogReducer } from './reducers/dialogReducers'
 import AppRouter from './router/AppRouter'
 import rootSaga from "./sagas";
+
 
 // TODO: добавить переменные среды
 //  запускать только при NODE_ENV==='production'

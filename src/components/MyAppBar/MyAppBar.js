@@ -6,8 +6,17 @@ import {
   Text,
 } from 'native-base'
 import { TouchableHighlight } from 'react-native'
+import { useDispatch } from 'react-redux'
+
 
 export const MyAppBar = () => {
+  const dispatch = useDispatch()
+  
+  const handlerExitDialog = () => {
+    // TODO: add Alert.Dialog to answer exit
+    dispatch({type: 'CLEAR_STATE'})
+  }
+  
   return (
     <>
       <Box width="100%" height="10%" flex="1" safeAreaTop>
@@ -20,7 +29,7 @@ export const MyAppBar = () => {
             Alexander Division's
           </Text>
           <TouchableHighlight width="30%" height="100%">
-            <Button height="100%" variant="outline" style={{ fontSize: 10 }}>
+            <Button height="100%" variant="outline" style={{ fontSize: 10 }} onPress={handlerExitDialog}>
               Завершить диалог
             </Button>
           </TouchableHighlight>

@@ -124,7 +124,6 @@ export const StartForm = ({ formik }) => {
                 }}
                 accessibilityLabel="Choose Service"
                 onValueChange={(itemValue) => {
-                  console.log(itemValue)
                   formik.setFieldValue('subtopics', itemValue)
                 }}
               >

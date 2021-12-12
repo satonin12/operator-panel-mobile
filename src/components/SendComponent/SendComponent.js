@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { AddIcon, ArrowForwardIcon, Box, Flex, Input } from "native-base";
+import PropTypes from "prop-types";
 
 export const SendComponent = ({onSend}) => {
   
@@ -36,4 +37,8 @@ export const SendComponent = ({onSend}) => {
       </Box>
     </>
   )
+}
+
+SendComponent.propTypes = {
+  onSend: PropTypes.func
 }

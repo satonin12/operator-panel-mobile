@@ -100,7 +100,9 @@ export const QueuePage = () => {
     OneSignal.addEventListener('ids', onIds);
   
     // TODO: replace to PLAYER ID
-    OneSignal.sendTag('custom_id', state.idDialog.toString());
+    if(state.idDialog !== null) {
+      OneSignal.sendTag('custom_id', state.idDialog.toString());
+    }
   
     return () => {
       OneSignal.removeEventListener('received', onReceived);

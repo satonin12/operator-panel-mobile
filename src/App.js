@@ -1,20 +1,27 @@
-import React  from "react";
+import React from 'react'
 import type { Node } from 'react'
 // import * as Sentry from '@sentry/react-native'
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { NativeBaseProvider } from 'native-base'
 import { persistReducer, persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
-import { composeWithDevTools } from 'remote-redux-devtools';
-import { Provider } from "react-redux";
+import { composeWithDevTools } from 'remote-redux-devtools'
+import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
+import { PubNubProvider } from 'pubnub-react'
+import PubNub from 'pubnub'
 
 import { dialogReducer } from './reducers/dialogReducers'
 import AppRouter from './router/AppRouter'
-import rootSaga from "./sagas";
+import rootSaga from './sagas'
 
+const pubnub = new PubNub({
+  publishKey: 'pub-c-4d7ac2be-7395-4fa7-a74d-f5b7efa8e439',
+  subscribeKey: 'sub-c-000c0078-5349-11ec-8a85-9eadcf5c6378',
+  uuid: 'sub-c-000c0078-5349-11ec-8a85-9eadcf5c6378'
+})
 
 // TODO: добавить переменные среды
 //  запускать только при NODE_ENV==='production'
@@ -50,8 +57,8 @@ const sagaMiddleware = createSagaMiddleware()
 // const composeEnhancers = composeWithDevTools({ realtime: true, port: 8081 });
 const store = createStore(
   pReducer,
-  composeWithDevTools(applyMiddleware(sagaMiddleware),
-  ));
+  composeWithDevTools(applyMiddleware(sagaMiddleware))
+)
 
 const persistor = persistStore(store)
 
@@ -61,13 +68,15 @@ sagaMiddleware.run(rootSaga)
 const App: () => Node = () => {
   return (
     // <React.StrictMode>
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <PubNubProvider client={pubnub}>
           <NativeBaseProvider>
             <AppRouter />
           </NativeBaseProvider>
-        </PersistGate>
-      </Provider>
+        </PubNubProvider>
+      </PersistGate>
+    </Provider>
     // </React.StrictMode>
   )
 }

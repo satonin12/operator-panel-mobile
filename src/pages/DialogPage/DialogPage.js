@@ -5,11 +5,18 @@ import { GiftedChat } from 'react-native-gifted-chat'
 import { MyAppBar } from '../../components/MyAppBar/MyAppBar'
 import { SendComponent } from '../../components/SendComponent/SendComponent'
 import { useSelector } from "react-redux";
+import { usePubNub } from 'pubnub-react'
+
 
 export const DialogPage = () => {
-  const { idDialog } = useSelector((state) => state.dialog)
+  const { idDialog, objectDialog } = useSelector((state) => state.dialog)
   const [messages, setMessages] = useState([])
+  const [isTyping, setIsTyping] = useState(false)
+  const [channels] = useState([objectDialog.name])
+  const pubnub = usePubNub()
 
+  console.log('objectDialog ', objectDialog)
+  
   const getMessages = async () => {
     try {
       await database()
@@ -48,6 +55,28 @@ export const DialogPage = () => {
   useEffect(() => {
     getMessages()
   }, [])
+  
+  const handleMessage = (event) => {
+    console.log('handleMessage ', event)
+  }
+  
+  const handleSignal = (event) => {
+    if(event.message === 'typing_on') {
+      setIsTyping(true)
+      setTimeout(() => {
+        setIsTyping(false)
+      }, 3000)
+    }
+  }
+  
+  useEffect(() => {
+    pubnub.addListener({
+      message: handleMessage,
+      signal: handleSignal
+    })
+    pubnub.subscribe({ channels })
+    // eslint-disable-next-line
+  }, [pubnub, channels])
 
   const onSend = useCallback((value) => {
     const date = new Date()
@@ -68,10 +97,12 @@ export const DialogPage = () => {
           <MyAppBar />
         </View>
         <GiftedChat
-          messages={messages}
           user={{
-            _id: 1
+            _id: 1,
+            name: objectDialog.name
           }}
+          isTyping={isTyping}
+          messages={messages}
           renderInputToolbar={() => {
             return <SendComponent onSend={onSend} />
           }}

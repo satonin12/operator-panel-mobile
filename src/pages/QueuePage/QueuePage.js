@@ -91,7 +91,18 @@ export const QueuePage = () => {
   
   useEffect(() => {
     getQueueLength()
-    
+  }, [])
+
+  useInterval(
+    () => {
+      checkStartDialog()
+    },
+    !state.isDialogOpen ? 2000 : null
+  ) // 30 sec.
+
+  const handlerButton = () => {
+    console.log('нажали кнопочку')
+  
     OneSignal.inFocusDisplaying(2);
     OneSignal.init('23e26e2f-9643-4633-8055-e32259dae838');
   
@@ -109,18 +120,6 @@ export const QueuePage = () => {
       OneSignal.removeEventListener('opened', onOpened);
       OneSignal.removeEventListener('ids', onIds);
     };
-  }, [])
-
-  useInterval(
-    () => {
-      checkStartDialog()
-    },
-    !state.isDialogOpen ? 2000 : null
-  ) // 30 sec.
-
-  const handlerButton = () => {
-    console.log('нажали кнопочку')
-
   }
 
   // ! JSX Variables Block

@@ -1,6 +1,7 @@
 import { HomePage } from '../pages/HomePage/HomePage'
 import { QueuePage } from '../pages/QueuePage/QueuePage'
 import { DialogPage } from '../pages/DialogPage/DialogPage'
+import { CameraComponent } from "../components/CameraComponent/CameraComponent";
 
 export const Routes = {
   home: {
@@ -18,5 +19,10 @@ export const Routes = {
     key: 'dialog',
     title: 'Диалог',
     component: DialogPage
+  },
+  camera: {
+    key: 'camera',
+    title: 'Камеры',
+    component: CameraComponent
   }
 }

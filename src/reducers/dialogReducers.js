@@ -1,7 +1,8 @@
-import { DIALOG_START, SAVE_DIALOG, CLEAR_STATE } from "../actions/dialogAction";
+import { DIALOG_START, SAVE_DIALOG, CLEAR_STATE, ADD_IMAGE } from "../actions/dialogAction";
 
 const initialState = {
   objectDialog: null,
+  attachImage: [],
   idDialog: null,
   isDialogOpen: false
 }
@@ -24,6 +25,12 @@ export function dialogReducer (state = initialState, action) {
       return {
         ...state,
         isDialogOpen: true
+      }
+    }
+    case ADD_IMAGE: {
+      return {
+        ...state,
+        attachImage: [...state.attachImage, action.payload]
       }
     }
     case CLEAR_STATE:

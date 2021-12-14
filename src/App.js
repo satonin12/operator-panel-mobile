@@ -16,6 +16,7 @@ import PubNub from 'pubnub'
 import { dialogReducer } from './reducers/dialogReducers'
 import AppRouter from './router/AppRouter'
 import rootSaga from './sagas'
+import { CameraComponent } from "./components/CameraComponent/CameraComponent";
 
 const pubnub = new PubNub({
   publishKey: 'pub-c-4d7ac2be-7395-4fa7-a74d-f5b7efa8e439',

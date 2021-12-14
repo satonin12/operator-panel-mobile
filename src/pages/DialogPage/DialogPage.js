@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react'
 // import { View } from 'native-base'
 import database from '@react-native-firebase/database'
-import { GiftedChat } from 'react-native-gifted-chat'
+import { Bubble, GiftedChat } from "react-native-gifted-chat";
 // import { MyAppBar } from '../../components/MyAppBar/MyAppBar'
 // import { SendComponent } from '../../components/SendComponent/SendComponent'
 import { useDispatch, useSelector } from "react-redux";
 import { usePubNub } from 'pubnub-react'
 import { SafeAreaView } from 'react-native'
 import {launchImageLibrary} from 'react-native-image-picker';
+import * as Animatable from 'react-native-animatable';
 
 import { CameraComponent } from '../../components/CameraComponent/CameraComponent'
 import { SendComponent } from "../../components/SendComponent/SendComponent";
@@ -115,6 +116,14 @@ export const DialogPage = (props) => {
     dispatch({type: 'ADD_IMAGE', payload: response.url})
   }
   
+  const renderAnimationBubble = (props) => {
+    return (
+      <Animatable.View animation='fadeInUpBig' duration={1000}>
+        <Bubble {...props} />
+      </Animatable.View>
+    )
+  }
+  
   return (
     1 && (
       <SafeAreaView styles={{ flex: 1 }}>
@@ -129,6 +138,7 @@ export const DialogPage = (props) => {
             }}
             isTyping={isTyping}
             messages={messages}
+            renderBubble={renderAnimationBubble}
             renderInputToolbar={() => {
               return <SendComponent
                 attachImage

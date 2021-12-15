@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react'
 import ruLocale from 'date-fns/locale/ru'
 import LottieView from 'lottie-react-native'
+import OneSignal from 'react-native-onesignal'
+import { Actions } from 'react-native-router-flux'
+import database from '@react-native-firebase/database'
+import { useDispatch, useSelector } from 'react-redux'
+import { EventRegister } from 'react-native-event-listeners'
 import formatDistanceStrict from 'date-fns/formatDistanceStrict'
 import { Box, Button, Center, Flex, Heading, Text, VStack } from 'native-base'
-import { useDispatch, useSelector } from 'react-redux'
 
 import SmileLottie from '../../assets/lottie/smile.json'
-import database from '@react-native-firebase/database'
-import useInterval from '../../hooks/useInterval'
-import { Actions } from 'react-native-router-flux'
-import OneSignal from 'react-native-onesignal'
 
 export const QueuePage = () => {
-  const [queueLength, setQueueLength] = useState(0)
-  const [indexDialog, setIndexDialog] = useState(null)
-  const state = useSelector((state) => state.dialog)
+  const delay = 10000
   const dispatch = useDispatch()
+  const { idDialog } = useSelector((state) => state.dialog)
+
+  const [queueLength, setQueueLength] = useState(0)
 
   const getQueueLength = async () => {
     try {
-      // setLoading(true)
       await database()
         .ref('chat/start/')
         .limitToLast(1)
@@ -28,30 +28,22 @@ export const QueuePage = () => {
           const tmp = Number(Object.keys(snapshot.val())[0]) + 1
           setQueueLength(tmp)
         })
-
-      await database()
-        .ref('chat/start/')
-        .orderByChild('uuid')
-        .equalTo(state.idDialog)
-        .once('value')
-        .then((snapshot) => {
-          const tmp = Number(Object.keys(snapshot.val())[0])
-          setIndexDialog(tmp)
-        })
     } catch (e) {
-      throw new Error({
-        ...e,
-        path: 'getTopicsAndSubTopics-firebase-exception'
-      })
+      // throw new Error({
+      //   ...e,
+      //   path: 'getTopicsAndSubTopics-firebase-exception'
+      // })
+      console.log(e)
     }
   }
 
   const checkDialogFromFirebase = () => {
-    console.log('checkDialogFromFirebase')
     try {
       return new Promise((resolve) => {
         database()
-          .ref(`chat/start/${indexDialog}`)
+          .ref(`chat/start/`)
+          .orderByChild('uuid')
+          .equalTo(idDialog)
           .on('child_removed', (snapshot) => {
             if (snapshot.val() !== null) {
               resolve({ isDelete: true, dialogDelete: snapshot.val() })
@@ -66,60 +58,80 @@ export const QueuePage = () => {
   const checkStartDialog = async () => {
     const isStartDialog = await checkDialogFromFirebase()
     if (isStartDialog.isDelete) {
-      dispatch({ type: 'DIALOG_START' })
-      Actions.dialog()
+      let newDialogSave = null
+      await database()
+        .ref('chat/active')
+        .orderByChild('uuid')
+        .equalTo(idDialog)
+        .once('value')
+        .then((snapshot) => {
+          const tmp = Number(Object.keys(snapshot.val())[0])
+          newDialogSave = snapshot.val()[tmp]
+          EventRegister.emit('dialogStartEvent', newDialogSave)
+        })
     }
   }
-  
-  const _openPanel = () => { Actions.dialog() };
-  
-  const onReceived = () => {
-    console.log('onReceived');
-  };
-  
-  const onOpened = (openResult) => {
-    console.log('открыли нотификацию');
-    const payload = openResult.notification.payload;
-    console.log('payload ', payload);
-  
-    _openPanel();
-  };
-  
-  const onIds = (device) => {
-    console.log('[INFO] Device: ', device);
-  };
-  
+
+  const handleDialogChange = (data) => {
+    dispatch({ type: 'SAVE_DIALOG', payload: { dialog: data } })
+    dispatch({ type: 'DIALOG_START' })
+  }
+
   useEffect(() => {
     getQueueLength()
+
+    const myInterval = setInterval(() => {
+      checkStartDialog()
+    }, delay)
+
+    const listener = EventRegister.addEventListener(
+      'dialogStartEvent',
+      handleDialogChange
+    )
+    return () => {
+      EventRegister.removeEventListener(listener)
+      clearInterval(myInterval)
+    }
   }, [])
 
-  useInterval(
-    () => {
-      checkStartDialog()
-    },
-    !state.isDialogOpen ? 2000 : null
-  ) // 30 sec.
+  const _openPanel = () => {
+    Actions.dialog()
+  }
+
+  const onReceived = () => {
+    console.log('onReceived')
+  }
+
+  const onOpened = (openResult) => {
+    const payload = openResult.notification.payload
+    console.log(payload)
+    _openPanel()
+  }
+
+  const onIds = (device) => {
+    console.log('[INFO] Device: ', device)
+  }
 
   const handlerButton = () => {
     console.log('нажали кнопочку')
-  
-    OneSignal.inFocusDisplaying(2);
-    OneSignal.init('23e26e2f-9643-4633-8055-e32259dae838');
-  
-    OneSignal.addEventListener('received', onReceived);
-    OneSignal.addEventListener('opened', onOpened);
-    OneSignal.addEventListener('ids', onIds);
-  
+
+    OneSignal.inFocusDisplaying(2)
+    OneSignal.init('23e26e2f-9643-4633-8055-e32259dae838')
+
+    OneSignal.addEventListener('received', onReceived)
+    OneSignal.addEventListener('opened', onOpened)
+    OneSignal.addEventListener('ids', onIds)
+
     // TODO: replace to PLAYER ID
-    if(state.idDialog !== null) {
-      OneSignal.sendTag('custom_id', state.idDialog.toString());
+    if (idDialog !== null) {
+      OneSignal.sendTag('custom_id', idDialog.toString())
     }
-  
+
     return () => {
-      OneSignal.removeEventListener('received', onReceived);
-      OneSignal.removeEventListener('opened', onOpened);
-      OneSignal.removeEventListener('ids', onIds);
-    };
+      OneSignal.removeEventListener('received', onReceived)
+      OneSignal.removeEventListener('opened', onOpened)
+      OneSignal.removeEventListener('ids', onIds)
+    }
   }
 
   // ! JSX Variables Block

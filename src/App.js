@@ -1,22 +1,23 @@
 import React from 'react'
-import type { Node } from 'react'
-// import * as Sentry from '@sentry/react-native'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-
-import { NativeBaseProvider } from 'native-base'
-import { persistReducer, persistStore } from 'redux-persist'
-import createSagaMiddleware from 'redux-saga'
-import { createStore, applyMiddleware, combineReducers } from 'redux'
-import { composeWithDevTools } from 'remote-redux-devtools'
-import { Provider } from 'react-redux'
-import { PersistGate } from 'redux-persist/integration/react'
-import { PubNubProvider } from 'pubnub-react'
 import PubNub from 'pubnub'
+import type { Node } from 'react'
+import { LogBox } from 'react-native';
+import { Provider } from 'react-redux'
+import createSagaMiddleware from 'redux-saga'
+import { PubNubProvider } from 'pubnub-react'
+import { NativeBaseProvider } from 'native-base'
+import { composeWithDevTools } from 'remote-redux-devtools'
+import { persistReducer, persistStore } from 'redux-persist'
+import { PersistGate } from 'redux-persist/integration/react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { createStore, applyMiddleware, combineReducers } from 'redux'
 
 import { dialogReducer } from './reducers/dialogReducers'
 import AppRouter from './router/AppRouter'
 import rootSaga from './sagas'
-import { CameraComponent } from "./components/CameraComponent/CameraComponent";
+
+// * NOTICE: use only production
+// import * as Sentry from '@sentry/react-native'
 
 const pubnub = new PubNub({
   publishKey: 'pub-c-4d7ac2be-7395-4fa7-a74d-f5b7efa8e439',
@@ -65,6 +66,9 @@ const persistor = persistStore(store)
 
 // run the saga
 sagaMiddleware.run(rootSaga)
+
+console.disableYellowBox = true;
+LogBox.ignoreLogs(['WARN', 'Deprecation', 'Require', 'NativeEventEmitter', 'SocketProtocolError', 'EventEmitter', '[SocketProtocolError: Socket hung up]']); // Ignore log notification by message
 
 const App: () => Node = () => {
   return (

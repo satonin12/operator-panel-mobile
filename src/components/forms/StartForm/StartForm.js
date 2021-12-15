@@ -90,6 +90,7 @@ export const StartForm = ({ formik }) => {
                   bg: 'teal.600',
                   endIcon: <CheckIcon size="5" />
                 }}
+                selectedValue='Appeal'
                 placeholder="Выберите тему"
                 accessibilityLabel="Choose Service"
                 onValueChange={(itemValue) =>
@@ -122,6 +123,7 @@ export const StartForm = ({ formik }) => {
                   bg: 'teal.600',
                   endIcon: <CheckIcon size="5" />
                 }}
+                selectedValue='personalArrea'
                 accessibilityLabel="Choose Service"
                 onValueChange={(itemValue) => {
                   formik.setFieldValue('subtopics', itemValue)

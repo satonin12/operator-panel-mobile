@@ -6,17 +6,13 @@ import { useSelector } from 'react-redux'
 
 const AppRouter: () => Node = () => {
   const { isDialogOpen, idDialog } = useSelector((state) => state.dialog)
-
-  console.log('isDialogOpen ', isDialogOpen)
-  console.log('idDialog ', idDialog)
-  console.log('idDialog ', idDialog !== null)
-
-  // if (isDialogOpen && idDialog !== null) {
-    console.log('вернули экран dialog')
+  
+  if (isDialogOpen && idDialog !== null) {
     return (
       <Router>
         <Stack key="root">
           <Scene
+            hideNavBar={true}
             key={Routes.dialog?.key}
             back={Routes.dialog?.back}
             title={Routes.dialog?.title}
@@ -24,6 +20,7 @@ const AppRouter: () => Node = () => {
             component={Routes.dialog?.component}
           />
           <Scene
+            hideNavBar={true}
             key={Routes.camera?.key}
             back={Routes.camera?.back}
             title={Routes.camera?.title}
@@ -33,41 +30,41 @@ const AppRouter: () => Node = () => {
         </Stack>
       </Router>
     )
-  // }
+  }
 
-  // if (!isDialogOpen && idDialog !== null) {
-  //   console.log('вернули экран очереди')
-  //   return (
-  //     <Router>
-  //       <Stack key="root">
-  //         <Scene
-  //           key={Routes.queue?.key}
-  //           back={Routes.queue?.back}
-  //           title={Routes.queue?.title}
-  //           initial={Routes.queue?.initial}
-  //           component={Routes.queue?.component}
-  //         />
-  //       </Stack>
-  //     </Router>
-  //   )
-  // }
-  //
-  // if (!isDialogOpen) {
-  //   console.log('вернули экран home')
-  //   return (
-  //     <Router>
-  //       <Stack key="root">
-  //         <Scene
-  //           key={Routes.home?.key}
-  //           back={Routes.home?.back}
-  //           title={Routes.home?.title}
-  //           initial={Routes.home?.initial}
-  //           component={Routes.home?.component}
-  //         />
-  //       </Stack>
-  //     </Router>
-  //   )
-  // }
+  if (!isDialogOpen && idDialog !== null) {
+    return (
+      <Router>
+        <Stack key="root">
+          <Scene
+            hideNavBar={true}
+            key={Routes.queue?.key}
+            back={Routes.queue?.back}
+            title={Routes.queue?.title}
+            initial={Routes.queue?.initial}
+            component={Routes.queue?.component}
+          />
+        </Stack>
+      </Router>
+    )
+  }
+
+  if (!isDialogOpen) {
+    return (
+      <Router>
+        <Stack key="root">
+          <Scene
+            hideNavBar={true}
+            key={Routes.home?.key}
+            back={Routes.home?.back}
+            title={Routes.home?.title}
+            initial={Routes.home?.initial}
+            component={Routes.home?.component}
+          />
+        </Stack>
+      </Router>
+    )
+  }
 }
 
 export default AppRouter

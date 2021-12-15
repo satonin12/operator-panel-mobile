@@ -1,11 +1,91 @@
-import { takeLatest, all } from 'redux-saga/effects'
+import { all, call, put, select, takeLatest } from 'redux-saga/effects'
+import { firebase } from '@react-native-firebase/database'
 
+export const getDialogState = (state) => state.dialog
 
-function * saveDialogToState (action) {
-  console.log('saga', action)
+const transferedMessages = (msg) => {
+  const messages = msg.messages.reverse()
+  return messages.map((message, index) => {
+    const tmpMessageObject = {
+      _id: msg.operatorId + index,
+      text: message.content,
+      createdAt: message.timestamp,
+      user: {
+        _id: msg.uuid + Date.now(),
+        name: msg.name,
+        avatar: msg.avatar
+      }
+    }
+    if (message.image_url) {
+      tmpMessageObject.image = message.image_url.map((image) => image.src)
+    }
+    return tmpMessageObject
+  })
 }
-export default function * rootSaga () {
-  yield all ([
-    takeLatest('SAVE_DIALOG', saveDialogToState),
+
+function* getMessages() {
+  try {
+    const { idDialog } = yield select(getDialogState)
+
+    const _messages = yield call(() => {
+      return new Promise((resolve, _) => {
+        firebase
+          .database()
+          .ref('chat/active/')
+          .orderByChild('uuid')
+          .equalTo(idDialog)
+          .once('value', (snapshot) => {
+            const tmp = Number(Object.keys(snapshot.val()))
+            resolve(snapshot.val()[tmp].messages)
+          })
+      })
+    })
+
+    const newMessages = transferedMessages(_messages)
+    console.log(newMessages)
+
+    yield put({
+      type: 'GET_MESSAGES_SUCCESS',
+      payload: { messages: newMessages }
+    })
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+function* sendMessageToFirebase(action) {
+  // console.log('sendMessageToFirebase')
+  // try {
+  //   const { idDialog, objectDialog } = yield select(getDialogState)
+  //   const currentMessages = [...objectDialog.messages, action.payload.message]
+  //
+  //   const dialogObject = yield call(() => {
+  //     return new Promise((resolve, _) => {
+  //       firebase
+  //         .database()
+  //         .ref('chat/active')
+  //         .orderByChild('uuid')
+  //         .equalTo(idDialog)
+  //         .once('value', (snapshot) => {
+  //           resolve(snapshot.val()[Object.keys(snapshot.val())])
+  //
+  //           snapshot.forEach((child) => {
+  //             child.ref.set({
+  //               ...objectDialog,
+  //               messages: currentMessages
+  //             })
+  //           })
+  //         })
+  //     })
+  //   })
+  // } catch (e) {
+  //   console.log(e)
+  // }
+}
+
+export default function* rootSaga() {
+  yield all([
+    takeLatest('GET_MESSAGES_REQUEST', getMessages),
+    takeLatest('SEND_MESSAGE', sendMessageToFirebase)
   ])
 }

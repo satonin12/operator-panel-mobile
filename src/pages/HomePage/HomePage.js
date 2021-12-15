@@ -56,7 +56,7 @@ export const HomePage = () => {
         }
       })
   
-    dispatch({type: 'SAVE_DIALOG', payload: { ...newDialog }})
+    dispatch({type: 'SAVE_DIALOG', payload: { dialog: newDialog }})
     // переводим на экран ожидания очереди
     Actions.queue()
   }

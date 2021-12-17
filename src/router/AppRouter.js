@@ -54,7 +54,6 @@ const AppRouter: () => Node = () => {
       <Router>
         <Stack key="root">
           <Scene
-            hideNavBar={true}
             key={Routes.home?.key}
             back={Routes.home?.back}
             title={Routes.home?.title}

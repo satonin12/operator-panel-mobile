@@ -42,7 +42,6 @@ function* getMessages() {
     })
 
     const newMessages = transferedMessages(_messages)
-    console.log(newMessages)
 
     yield put({
       type: 'GET_MESSAGES_SUCCESS',
@@ -53,39 +52,8 @@ function* getMessages() {
   }
 }
 
-function* sendMessageToFirebase(action) {
-  // console.log('sendMessageToFirebase')
-  // try {
-  //   const { idDialog, objectDialog } = yield select(getDialogState)
-  //   const currentMessages = [...objectDialog.messages, action.payload.message]
-  //
-  //   const dialogObject = yield call(() => {
-  //     return new Promise((resolve, _) => {
-  //       firebase
-  //         .database()
-  //         .ref('chat/active')
-  //         .orderByChild('uuid')
-  //         .equalTo(idDialog)
-  //         .once('value', (snapshot) => {
-  //           resolve(snapshot.val()[Object.keys(snapshot.val())])
-  //
-  //           snapshot.forEach((child) => {
-  //             child.ref.set({
-  //               ...objectDialog,
-  //               messages: currentMessages
-  //             })
-  //           })
-  //         })
-  //     })
-  //   })
-  // } catch (e) {
-  //   console.log(e)
-  // }
-}
-
 export default function* rootSaga() {
   yield all([
-    takeLatest('GET_MESSAGES_REQUEST', getMessages),
-    takeLatest('SEND_MESSAGE', sendMessageToFirebase)
+    takeLatest('GET_MESSAGES_REQUEST', getMessages)
   ])
 }

@@ -1,9 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.intershipvsatoninmobile">
 
+    /* Default User's Permissions */
     <uses-permission android:name="android.permission.INTERNET" />
 
-    /* Required */
+    /* For notification OneSignal */
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
+
+    /* For camera */
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>

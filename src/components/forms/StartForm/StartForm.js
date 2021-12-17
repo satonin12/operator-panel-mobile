@@ -9,7 +9,8 @@ import {
   CheckIcon,
   Button,
   Spinner,
-  Center
+  Center,
+  ScrollView
 } from 'native-base'
 import database from '@react-native-firebase/database'
 import PropTypes from 'prop-types'
@@ -55,6 +56,7 @@ export const StartForm = ({ formik }) => {
   ))
 
   return (
+    <ScrollView>
     <Box>
       {loading ? (
         <Center h="100%" w="100%">
@@ -90,7 +92,6 @@ export const StartForm = ({ formik }) => {
                   bg: 'teal.600',
                   endIcon: <CheckIcon size="5" />
                 }}
-                selectedValue='Appeal'
                 placeholder="Выберите тему"
                 accessibilityLabel="Choose Service"
                 onValueChange={(itemValue) =>
@@ -123,7 +124,6 @@ export const StartForm = ({ formik }) => {
                   bg: 'teal.600',
                   endIcon: <CheckIcon size="5" />
                 }}
-                selectedValue='personalArrea'
                 accessibilityLabel="Choose Service"
                 onValueChange={(itemValue) => {
                   formik.setFieldValue('subtopics', itemValue)
@@ -163,6 +163,7 @@ export const StartForm = ({ formik }) => {
         </Stack>
       )}
     </Box>
+    </ScrollView>
   )
 }
 

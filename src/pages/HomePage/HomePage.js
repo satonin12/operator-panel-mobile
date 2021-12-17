@@ -13,7 +13,6 @@ export const HomePage = () => {
   const dispatch = useDispatch()
   
   const createDialogFromBack = async (values) => {
-    console.log('зашли сюда')
     let lengthActiveDialogs
     // создаем запись
     // для этого узнаем длину последнего элемента в очереди
@@ -42,7 +41,9 @@ export const HomePage = () => {
           writtenBy: 'client',
           timestamp: timestamp.toISOString()
         }
-      ]
+      ],
+      topics: values.topics,
+      subtopics: values.subtopics
     }
     
     await firebase

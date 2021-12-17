@@ -6,8 +6,6 @@ import {
   Flex,
   Input,
   Popover,
-  Button,
-  Icon,
   Image,
   HStack,
   VStack,
@@ -20,13 +18,19 @@ export const SendComponent = ({
   onSend,
   onAddImage,
   onSelectImage,
-  badges
+  badges,
+                                onInputChange
 }) => {
   const [value, setValue] = useState('')
 
   const handlerSend = () => {
     onSend(value)
     setValue('')
+  }
+  
+  const handlerChangeText = (value) => {
+    setValue(value)
+    onInputChange()
   }
 
   return (
@@ -56,10 +60,10 @@ export const SendComponent = ({
                   >
                     {badges}
                   </Badge>
-                  <AddIcon width="10%" size="4" ml="3" {...triggerProps} />
+                  <AddIcon width="10%" size="4" ml="2" {...triggerProps} />
                 </VStack>
               ) : (
-                <AddIcon width="10%" size="4" ml="3" {...triggerProps} />
+                <AddIcon width="10%" size="4" ml="2" {...triggerProps} />
               )
             }}
           >
@@ -93,7 +97,7 @@ export const SendComponent = ({
             value={value}
             variant="filled"
             placeholder="Напишите собщение..."
-            onChangeText={(value) => setValue(value)}
+            onChangeText={handlerChangeText}
           />
           <ArrowForwardIcon mr="3" size="6" width="10%" onPress={handlerSend} />
         </Flex>

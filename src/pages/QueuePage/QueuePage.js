@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 import ruLocale from 'date-fns/locale/ru'
 import LottieView from 'lottie-react-native'
 import OneSignal from 'react-native-onesignal'
@@ -7,7 +7,7 @@ import database from '@react-native-firebase/database'
 import { useDispatch, useSelector } from 'react-redux'
 import { EventRegister } from 'react-native-event-listeners'
 import formatDistanceStrict from 'date-fns/formatDistanceStrict'
-import { Box, Button, Center, Flex, Heading, Text, VStack } from 'native-base'
+import { Box, Button, Center, Heading, Text, VStack } from 'native-base'
 
 import SmileLottie from '../../assets/lottie/smile.json'
 
@@ -36,7 +36,7 @@ export const QueuePage = () => {
       console.log(e)
     }
   }
-
+  
   const checkDialogFromFirebase = () => {
     try {
       return new Promise((resolve) => {
@@ -79,7 +79,7 @@ export const QueuePage = () => {
 
   useEffect(() => {
     getQueueLength()
-
+  
     const myInterval = setInterval(() => {
       checkStartDialog()
     }, delay)
@@ -108,8 +108,30 @@ export const QueuePage = () => {
     _openPanel()
   }
 
+  const saveDeviceIdInFirebase = async (userId) => {
+    await database()
+    .ref(`chat/start/`)
+    .orderByChild('uuid')
+    .equalTo(idDialog)
+    .on('value', (snapshot) => {
+      const tmp = Number(Object.keys(snapshot.val()))
+      const dialog = snapshot.val()[tmp]
+      snapshot.forEach((child) => {
+        child.ref.set(({
+          ...dialog,
+          deviceId: userId
+        }))
+      })
+    })
+  }
+  
   const onIds = (device) => {
     console.log('[INFO] Device: ', device)
+    if (idDialog !== null) {
+      OneSignal.sendTag('custom_id', idDialog.toString())
+      OneSignal.sendTag('id_device', device.userId.toString())
+      saveDeviceIdInFirebase(device.userId)
+    }
   }
 
   const handlerButton = () => {
@@ -121,11 +143,6 @@ export const QueuePage = () => {
     OneSignal.addEventListener('received', onReceived)
     OneSignal.addEventListener('opened', onOpened)
     OneSignal.addEventListener('ids', onIds)
-
-    // TODO: replace to PLAYER ID
-    if (idDialog !== null) {
-      OneSignal.sendTag('custom_id', idDialog.toString())
-    }
 
     return () => {
       OneSignal.removeEventListener('received', onReceived)
@@ -143,9 +160,9 @@ export const QueuePage = () => {
   )
 
   return (
-    <Box width="100%" padding="15px">
-      <Flex h="100%" w="100%" mt={6}>
-        <Heading mt="10" w="100%">
+    <Box h="100%" width="100%" padding="15px">
+      <Box h="100%" w="100%" display="flex" flexDirection="column" justifyContent="space-between" >
+        <Heading w="100%">
           <VStack w="100%" height="auto">
             <Text fontSize="2xl" color="black">
               Вы в очереди на {queueLength} месте
@@ -155,7 +172,7 @@ export const QueuePage = () => {
             </Text>
           </VStack>
         </Heading>
-        <Center mt={10} style={{ margin: 0, padding: 0 }}>
+        <Center style={{ margin: 0, padding: 0 }}>
           <LottieView
             source={SmileLottie}
             autoPlay
@@ -164,7 +181,6 @@ export const QueuePage = () => {
           />
         </Center>
         <Button
-          mt={10}
           width="100%"
           variant="outline"
           colorScheme="secondary"
@@ -172,7 +188,7 @@ export const QueuePage = () => {
         >
           Напомнить когда придет очередь
         </Button>
-      </Flex>
+      </Box >
     </Box>
   )
 }

@@ -4,7 +4,10 @@ import {
   CLEAR_STATE,
   ADD_IMAGE,
   SEND_MESSAGE,
-  GET_MESSAGES_REQUEST, GET_MESSAGES_SUCCESS, GET_MESSAGES_FAILURE, DELETE_IMAGE,
+  GET_MESSAGES_REQUEST,
+  GET_MESSAGES_SUCCESS,
+  GET_MESSAGES_FAILURE,
+  DELETE_IMAGE
 } from "../actions/dialogAction";
 
 const initialState = {
@@ -14,7 +17,7 @@ const initialState = {
   idDialog: null,
   isDialogOpen: false,
   loading: false,
-  errorLoading: null
+  errorLoading: null,
 }
 
 export function dialogReducer (state = initialState, action) {

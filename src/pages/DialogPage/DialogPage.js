@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { usePubNub } from 'pubnub-react'
-import {Spinner, View, Image } from 'native-base'
+import { Spinner, View, Image, Modal, Button, Stack } from 'native-base'
+import uuid from 'react-native-uuid'
 import { Actions } from 'react-native-router-flux'
 import { GiftedChat } from 'react-native-gifted-chat'
 import { useDispatch, useSelector } from 'react-redux'
 import { SafeAreaView, StyleSheet } from 'react-native'
+import { AirbnbRating } from 'react-native-ratings'
 import { launchImageLibrary } from 'react-native-image-picker'
 import database, { firebase } from '@react-native-firebase/database'
 
@@ -19,51 +21,91 @@ export const DialogPage = (props) => {
   const pubnub = usePubNub()
   const dispatch = useDispatch()
   
-  console.log('отрендерили DialogPage')
-  
-  const { idDialog, objectDialog, attachImage, loading } = useSelector((state) => state.dialog)
+  const { idDialog, objectDialog, attachImage, loading } = useSelector(
+    (state) => state.dialog
+  )
   
   // ui state's
   const [messages, setMessages] = useState([])
+  const [operator, setOperator] = useState({})
+  const [loadingOperator, setLoadingOperator] = useState(false)
+  const [raitings, setRaitings] = useState(4) // default raitings
+  const [isOpenEndDialogWindow, setIsOpenEndDialogWindow] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
-  const [channels] = useState([objectDialog.name])
-
+  const [channels] = useState([idDialog])
+  
   // ? Function declaration block
   
-  const getMessages = useCallback(async () => {
+  const getMessages = async () => {
+    setLoadingOperator(true)
     console.log('getMessages')
     try {
       let newDialogSave = null
       await database()
-        .ref('chat/active')
-        .orderByChild('uuid')
-        .equalTo(idDialog)
-        .once('value')
-        .then((snapshot) => {
-          const tmp = Number(Object.keys(snapshot.val())[0])
-          newDialogSave = snapshot.val()[tmp]
-        })
-      console.log('newDialogSave ', newDialogSave)
-
+      .ref('chat/active')
+      .orderByChild('uuid')
+      .equalTo(idDialog)
+      .once('value')
+      .then((snapshot) => {
+        const tmp = Number(Object.keys(snapshot.val())[0])
+        newDialogSave = snapshot.val()[tmp]
+      })
+      
       transferredMessages(newDialogSave)
     } catch (e) {
       console.log('error getMessages, ', e)
     }
-  }, [])
-
+  }
+  
+  const getOperator = async () => {
+    console.log('getOperator')
+    try {
+      // setLoadingOperator(true)
+      await database()
+      .ref('operators/')
+      .orderByChild('uid')
+      .equalTo(objectDialog.operatorId)
+      .once('value')
+      .then((snapshot) => {
+        const tmp = Object.keys(snapshot.val())[0]
+        const { avatar, name, email, uid } = snapshot.val()[tmp]
+        
+        setOperator((prevState) => ({
+          ...prevState,
+          avatar,
+          name,
+          email,
+          uid
+        }))
+      })
+      setLoadingOperator(false)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  
   const transferredMessages = (msg) => {
     const messages = msg.messages.reverse()
-    const newArrayMessages = messages.map((message, index) => {
+    const newArrayMessages = messages.map((message) => {
       const tmpMessageObject = {
-        _id: msg.operatorId + index,
+        _id: uuid.v4(),
         text: message.content,
-        createdAt: message.timestamp,
-        user: {
-          _id: msg.uuid + Date.now(),
-          name: msg.name,
-          avatar: msg.avatar
+        createdAt: message.timestamp
+      }
+      if (message.writtenBy === 'client') {
+        tmpMessageObject.user = {
+          _id: idDialog,
+          name: objectDialog.name
         }
       }
+      if (message.writtenBy === 'operator') {
+        tmpMessageObject.user = {
+          _id: operator.uid,
+          name: operator.name || operator.email,
+          avatar: operator.avatar
+        }
+      }
+      
       if (message.image_url) {
         tmpMessageObject.image = message.image_url.map((image) => image.src)
       }
@@ -71,26 +113,32 @@ export const DialogPage = (props) => {
     })
     setMessages(newArrayMessages)
   }
-
+  
   const checkImageProps = () => {
     if (props.url) {
       dispatch({ type: 'ADD_IMAGE', payload: props.url })
     }
   }
-
+  
   useEffect(() => {
-    console.log('отрендерили DialogPage')
     checkImageProps()
     getMessages()
+    getOperator()
   }, [])
-
+  
   const handleMessage = (event) => {
     const date = new Date(event.timetoken / 1e4).toISOString()
     const newMessage = {
-      ...messages[0],
+      _id: uuid.v4(),
       text: event.message.value,
-      createdAt: date
+      createdAt: date,
+      user: {
+        _id: operator.uid,
+        name: operator.name || operator.email,
+        avatar: operator.avatar
+      }
     }
+    console.log('newMessage ', newMessage)
     if (event.message.isImage) {
       newMessage.image = event.message.images.map((image) =>
         image.hasOwnProperty('src') ? image.src : image
@@ -100,16 +148,16 @@ export const DialogPage = (props) => {
       GiftedChat.append(previousMessages, newMessage)
     )
   }
-
+  
   const handleSignal = (event) => {
-    if (event.message === 'typing_on') {
+    if (event.message === 'typing_on_operator') {
       setIsTyping(true)
       setTimeout(() => {
         setIsTyping(false)
       }, 5000)
     }
   }
-
+  
   useEffect(() => {
     pubnub.addListener({
       message: handleMessage,
@@ -118,60 +166,61 @@ export const DialogPage = (props) => {
     pubnub.subscribe({ channels })
     // eslint-disable-next-line
   }, [pubnub, channels])
-
+  
   const onSend = useCallback(async (value) => {
     if (value.trim().length || attachImage.length !== 0) {
       const date = new Date()
-      console.log('attachImage.length ', attachImage.length)
-
       const newMessageForGiftedChat = {
-        ...messages[0],
+        _id: uuid.v4(),
         text: value,
-        createdAt: date.toISOString()
+        createdAt: date.toISOString(),
+        user: {
+          _id: idDialog,
+          name: objectDialog.name
+        }
       }
       const dataMessage = {
         content: value,
         timestamp: date.toISOString(),
         writtenBy: 'client'
       }
-
+      
       if (attachImage.length !== 0) {
         newMessageForGiftedChat.image = attachImage
         dataMessage.image_url = attachImage
-        console.log(newMessageForGiftedChat)
       }
-
+      
       // save in firebase
       await firebase
-        .database()
-        .ref('chat/active')
-        .orderByChild('uuid')
-        .equalTo(idDialog)
-        .once('value', (snapshot) => {
-          const tmp = Number(Object.keys(snapshot.val()))
-          const msg = snapshot.val()[tmp].messages
-          snapshot.forEach((child) => {
-            child.ref.set({
-              ...objectDialog,
-              messages: [...msg, dataMessage]
-            })
+      .database()
+      .ref('chat/active')
+      .orderByChild('uuid')
+      .equalTo(idDialog)
+      .once('value', (snapshot) => {
+        const tmp = Number(Object.keys(snapshot.val()))
+        const msg = snapshot.val()[tmp].messages
+        snapshot.forEach((child) => {
+          child.ref.set({
+            ...objectDialog,
+            messages: [...msg, dataMessage]
           })
         })
-
+      })
+      
       // save in GiftedChat
       setMessages((previousMessages) =>
         GiftedChat.append(previousMessages, newMessageForGiftedChat)
       )
-
+      
       // clear attachImage
       dispatch({ type: 'DELETE_IMAGE' })
     }
   }, [])
-
+  
   const handlerAddImage = () => {
     Actions.camera()
   }
-
+  
   const handlerSelectImage = async () => {
     const result = await launchImageLibrary({ includeBase64: true })
     const base64 = result.assets[0].base64
@@ -179,7 +228,55 @@ export const DialogPage = (props) => {
     const response = resUploadCloudinary.json()
     dispatch({ type: 'ADD_IMAGE', payload: response.url })
   }
-
+  
+  const handlerExitDialog = () => {
+    // change state to open modal window
+    setIsOpenEndDialogWindow(true)
+  }
+  
+  const tranferDialogToComplete = async () => {
+    let _newDialogObject = null
+    let completeDialogsLength = null
+    await database()
+    .ref('chat/active')
+    .orderByChild('uuid')
+    .equalTo(idDialog)
+    .once('value')
+    .then((snapshot) => {
+      snapshot.forEach((child) => {
+        // изменяем сам обьект и сохраняем его по прежнему пути
+        _newDialogObject = JSON.parse(JSON.stringify(child))
+        _newDialogObject.rate = raitings
+        _newDialogObject.status = 'complete'
+        // child.ref.set(_newDialogObject)
+        
+        // удаляем старый диалог в пути chat/active
+        child.ref.remove()
+      })
+    })
+    
+    // узнаем длину последнего элемента в firebase chat/complete
+    await database()
+    .ref('chat/complete/')
+    .limitToLast(1)
+    .once('value', (snapshot) => {
+      const lengthDialogs = Object.keys(snapshot.val())
+      completeDialogsLength =
+        Number(lengthDialogs[lengthDialogs.length - 1]) + 1
+    })
+    
+    // создаем новый диалог в пути chat/complete
+    await database()
+    .ref(`chat/complete/${completeDialogsLength}`)
+    .set(_newDialogObject)
+  }
+  
+  const handlerEndDialog = () => {
+    // отправляем в firebase rating и переводим диалог в complete
+    tranferDialogToComplete()
+    dispatch({ type: 'CLEAR_STATE' })
+  }
+  
   // FIXME: working on first message of list every send message,
   // there are restrictions on attaching pictures and text
   // TODO: message time drop to bottom
@@ -224,23 +321,23 @@ export const DialogPage = (props) => {
   //   props.currentMessage.image = null
   //   return <Bubble {...props} />
   // }
-
+  
   const renderMessageImage = ({ lightboxProps, imageProps, ...props }) => {
     return (
-    <View style={styles.container}>
-      {props.currentMessage.image.map((image, index) => (
-        <Image
-          key={image + index + Date.now()}
-          {...imageProps}
-          style={styles.image}
-          source={{ uri: image }}
-          alt="Image for dialog"
-        />
-      ))}
-    </View>
+      <View style={styles.container}>
+        {props.currentMessage.image.map((image, index) => (
+          <Image
+            key={image + index + Date.now()}
+            {...imageProps}
+            style={styles.image}
+            source={{ uri: image }}
+            alt="Image for dialog"
+          />
+        ))}
+      </View>
     )
   }
-
+  
   const renderLoading = () => {
     if (loading) {
       return (
@@ -248,39 +345,87 @@ export const DialogPage = (props) => {
       )
     }
   }
-
+  
+  const ratingCompleted = (rating) => {
+    setRaitings(rating)
+  }
+  
+  const handlerInputChange = (_) => {
+    pubnub.signal({
+      message: 'typing_on_client',
+      channel: channels
+    })
+  }
+  
   return (
-    1 && (
-      <SafeAreaView styles={{ flex: 1 }}>
-        <View width="100%" height="100%">
-          <View width="100%" height="10%">
-            <MyAppBar />
-          </View>
-          <GiftedChat
-            user={{
-              _id: 1,
-              name: objectDialog.name
-            }}
-            isTyping={isTyping}
-            messages={messages}
-            // renderBubble={renderAnimationBubble}
-            renderMessageImage={renderMessageImage}
-            renderLoading={renderLoading}
-            renderInputToolbar={() => {
-              return (
-                <SendComponent
-                  attachImage
-                  onSend={onSend}
-                  badges={attachImage.length}
-                  onAddImage={handlerAddImage}
-                  onSelectImage={handlerSelectImage}
-                />
-              )
-            }}
-          />
-        </View>
-      </SafeAreaView>
-    )
+    <SafeAreaView styles={{ flex: 1 }}>
+      <View width="100%" height="100%">
+        {loadingOperator ? (
+          <Spinner color="indigo.500" />
+        ) : (
+          <>
+            <View width="100%" height="10%">
+              <MyAppBar operator={operator} handlerExit={handlerExitDialog} />
+            </View>
+            <GiftedChat
+              isTyping={isTyping}
+              messages={messages}
+              // renderBubble={renderAnimationBubble}
+              renderMessageImage={renderMessageImage}
+              renderLoading={renderLoading}
+              renderInputToolbar={() => {
+                return (
+                  <SendComponent
+                    attachImage
+                    onSend={onSend}
+                    badges={attachImage.length}
+                    onAddImage={handlerAddImage}
+                    onSelectImage={handlerSelectImage}
+                    onInputChange={handlerInputChange}
+                  />
+                )
+              }}
+            />
+            <Modal
+              isOpen={isOpenEndDialogWindow}
+              onClose={() => setIsOpenEndDialogWindow(false)}
+            >
+              <Modal.Content maxWidth="400px">
+                <Modal.CloseButton />
+                <Modal.Header>Поставьте оценку оператору</Modal.Header>
+                <Modal.Body>
+                  <AirbnbRating
+                    onFinishRating={ratingCompleted}
+                    defaultRating={raitings}
+                  />
+                </Modal.Body>
+                <Modal.Footer>
+                  <Stack
+                    direction={{
+                      base: 'column',
+                      md: 'row'
+                    }}
+                    space={2}
+                    mx={{
+                      base: 'auto',
+                      md: '0'
+                    }}
+                  >
+                    <Button
+                      variant="subtle"
+                      colorScheme="secondary"
+                      onPress={handlerEndDialog}
+                    >
+                      Отправить оценку
+                    </Button>
+                  </Stack>
+                </Modal.Footer>
+              </Modal.Content>
+            </Modal>
+          </>
+        )}
+      </View>
+    </SafeAreaView>
   )
 }
 

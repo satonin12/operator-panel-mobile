@@ -16,6 +16,7 @@ import AppRouter from './router/AppRouter'
 import rootSaga from './sagas'
 
 // * NOTICE: use only production
+import { LogBox } from "react-native";
 import * as Sentry from '@sentry/react-native'
 
 const pubnub = new PubNub({
@@ -67,6 +68,7 @@ sagaMiddleware.run(rootSaga)
 
 // console.disableYellowBox = true;
 // LogBox.ignoreLogs(['WARN', 'Deprecation', 'Require', 'NativeEventEmitter', 'SocketProtocolError', 'EventEmitter', '[SocketProtocolError: Socket hung up]']); // Ignore log notification by message
+LogBox.ignoreAllLogs()
 
 const App: () => Node = () => {
   return (

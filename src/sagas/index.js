@@ -48,7 +48,10 @@ function* getMessages() {
       payload: { messages: newMessages }
     })
   } catch (e) {
-    console.log(e)
+    throw new Error({
+      ...e,
+      path: 'saga-getMessages'
+    })
   }
 }
 

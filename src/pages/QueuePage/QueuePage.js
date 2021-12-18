@@ -29,11 +29,10 @@ export const QueuePage = () => {
           setQueueLength(tmp)
         })
     } catch (e) {
-      // throw new Error({
-      //   ...e,
-      //   path: 'getTopicsAndSubTopics-firebase-exception'
-      // })
-      console.log(e)
+      throw new Error({
+        ...e,
+        path: 'QueuePage-getQueueLength'
+      })
     }
   }
   
@@ -51,7 +50,10 @@ export const QueuePage = () => {
           })
       })
     } catch (e) {
-      console.log('error in checkDialogFromFirebase', e)
+      throw new Error({
+        ...e,
+        path: 'QueuePage-checkDialogFromFirebase'
+      })
     }
   }
 
@@ -98,13 +100,8 @@ export const QueuePage = () => {
     Actions.dialog()
   }
 
-  const onReceived = () => {
-    console.log('onReceived')
-  }
-
   const onOpened = (openResult) => {
-    const payload = openResult.notification.payload
-    console.log(payload)
+    // const payload = openResult.notification.payload // for use
     _openPanel()
   }
 
@@ -126,7 +123,6 @@ export const QueuePage = () => {
   }
   
   const onIds = (device) => {
-    console.log('[INFO] Device: ', device)
     if (idDialog !== null) {
       OneSignal.sendTag('custom_id', idDialog.toString())
       OneSignal.sendTag('id_device', device.userId.toString())
@@ -135,17 +131,15 @@ export const QueuePage = () => {
   }
 
   const handlerButton = () => {
-    console.log('нажали кнопочку')
-
     OneSignal.inFocusDisplaying(2)
     OneSignal.init('23e26e2f-9643-4633-8055-e32259dae838')
 
-    OneSignal.addEventListener('received', onReceived)
+    // OneSignal.addEventListener('received', onReceived) // if use onRecieve notification
     OneSignal.addEventListener('opened', onOpened)
     OneSignal.addEventListener('ids', onIds)
 
     return () => {
-      OneSignal.removeEventListener('received', onReceived)
+      // OneSignal.removeEventListener('received', onReceived)
       OneSignal.removeEventListener('opened', onOpened)
       OneSignal.removeEventListener('ids', onIds)
     }

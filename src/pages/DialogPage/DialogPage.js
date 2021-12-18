@@ -13,6 +13,7 @@ import database, { firebase } from '@react-native-firebase/database'
 import { MyAppBar } from '../../components/MyAppBar/MyAppBar'
 import { uploadImageInCloudniary } from '../../utils/sendToCloudinary'
 import { SendComponent } from '../../components/SendComponent/SendComponent'
+import PropTypes from "prop-types";
 
 // * NOTICE: use if needed animation of new messages
 // import * as Animatable from 'react-native-animatable'
@@ -20,11 +21,11 @@ import { SendComponent } from '../../components/SendComponent/SendComponent'
 export const DialogPage = (props) => {
   const pubnub = usePubNub()
   const dispatch = useDispatch()
-  
+
   const { idDialog, objectDialog, attachImage, loading } = useSelector(
     (state) => state.dialog
   )
-  
+
   // ui state's
   const [messages, setMessages] = useState([])
   const [operator, setOperator] = useState({})
@@ -33,57 +34,60 @@ export const DialogPage = (props) => {
   const [isOpenEndDialogWindow, setIsOpenEndDialogWindow] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [channels] = useState([idDialog])
-  
+
   // ? Function declaration block
-  
+
   const getMessages = async () => {
     setLoadingOperator(true)
-    console.log('getMessages')
     try {
       let newDialogSave = null
       await database()
-      .ref('chat/active')
-      .orderByChild('uuid')
-      .equalTo(idDialog)
-      .once('value')
-      .then((snapshot) => {
-        const tmp = Number(Object.keys(snapshot.val())[0])
-        newDialogSave = snapshot.val()[tmp]
-      })
-      
+        .ref('chat/active')
+        .orderByChild('uuid')
+        .equalTo(idDialog)
+        .once('value')
+        .then((snapshot) => {
+          const tmp = Number(Object.keys(snapshot.val())[0])
+          newDialogSave = snapshot.val()[tmp]
+        })
+
       transferredMessages(newDialogSave)
     } catch (e) {
-      console.log('error getMessages, ', e)
+      throw new Error({
+        ...e,
+        path: 'DialogPage-getMessages'
+      })
     }
   }
-  
+
   const getOperator = async () => {
-    console.log('getOperator')
     try {
-      // setLoadingOperator(true)
       await database()
-      .ref('operators/')
-      .orderByChild('uid')
-      .equalTo(objectDialog.operatorId)
-      .once('value')
-      .then((snapshot) => {
-        const tmp = Object.keys(snapshot.val())[0]
-        const { avatar, name, email, uid } = snapshot.val()[tmp]
-        
-        setOperator((prevState) => ({
-          ...prevState,
-          avatar,
-          name,
-          email,
-          uid
-        }))
-      })
+        .ref('operators/')
+        .orderByChild('uid')
+        .equalTo(objectDialog.operatorId)
+        .once('value')
+        .then((snapshot) => {
+          const tmp = Object.keys(snapshot.val())[0]
+          const { avatar, name, email, uid } = snapshot.val()[tmp]
+
+          setOperator((prevState) => ({
+            ...prevState,
+            avatar,
+            name,
+            email,
+            uid
+          }))
+        })
       setLoadingOperator(false)
     } catch (e) {
-      console.log(e)
+      throw new Error({
+        ...e,
+        path: 'DialogPage-getOperator'
+      })
     }
   }
-  
+
   const transferredMessages = (msg) => {
     const messages = msg.messages.reverse()
     const newArrayMessages = messages.map((message) => {
@@ -105,27 +109,27 @@ export const DialogPage = (props) => {
           avatar: operator.avatar
         }
       }
-      
-      if (message.image_url) {
-        tmpMessageObject.image = message.image_url.map((image) => image.src)
-      }
+      if (message.image_url)
+        tmpMessageObject.image = message.image_url.map((image) =>
+          image.hasOwnProperty('src') ? image.src : image
+        )
       return tmpMessageObject
     })
     setMessages(newArrayMessages)
   }
-  
+
   const checkImageProps = () => {
     if (props.url) {
       dispatch({ type: 'ADD_IMAGE', payload: props.url })
     }
   }
-  
+
   useEffect(() => {
     checkImageProps()
     getMessages()
     getOperator()
   }, [])
-  
+
   const handleMessage = (event) => {
     const date = new Date(event.timetoken / 1e4).toISOString()
     const newMessage = {
@@ -138,7 +142,6 @@ export const DialogPage = (props) => {
         avatar: operator.avatar
       }
     }
-    console.log('newMessage ', newMessage)
     if (event.message.isImage) {
       newMessage.image = event.message.images.map((image) =>
         image.hasOwnProperty('src') ? image.src : image
@@ -148,7 +151,7 @@ export const DialogPage = (props) => {
       GiftedChat.append(previousMessages, newMessage)
     )
   }
-  
+
   const handleSignal = (event) => {
     if (event.message === 'typing_on_operator') {
       setIsTyping(true)
@@ -157,7 +160,7 @@ export const DialogPage = (props) => {
       }, 5000)
     }
   }
-  
+
   useEffect(() => {
     pubnub.addListener({
       message: handleMessage,
@@ -166,7 +169,7 @@ export const DialogPage = (props) => {
     pubnub.subscribe({ channels })
     // eslint-disable-next-line
   }, [pubnub, channels])
-  
+
   const onSend = useCallback(async (value) => {
     if (value.trim().length || attachImage.length !== 0) {
       const date = new Date()
@@ -184,43 +187,43 @@ export const DialogPage = (props) => {
         timestamp: date.toISOString(),
         writtenBy: 'client'
       }
-      
+
       if (attachImage.length !== 0) {
         newMessageForGiftedChat.image = attachImage
         dataMessage.image_url = attachImage
       }
-      
+
       // save in firebase
       await firebase
-      .database()
-      .ref('chat/active')
-      .orderByChild('uuid')
-      .equalTo(idDialog)
-      .once('value', (snapshot) => {
-        const tmp = Number(Object.keys(snapshot.val()))
-        const msg = snapshot.val()[tmp].messages
-        snapshot.forEach((child) => {
-          child.ref.set({
-            ...objectDialog,
-            messages: [...msg, dataMessage]
+        .database()
+        .ref('chat/active')
+        .orderByChild('uuid')
+        .equalTo(idDialog)
+        .once('value', (snapshot) => {
+          const tmp = Number(Object.keys(snapshot.val()))
+          const msg = snapshot.val()[tmp].messages
+          snapshot.forEach((child) => {
+            child.ref.set({
+              ...objectDialog,
+              messages: [...msg, dataMessage]
+            })
           })
         })
-      })
-      
+
       // save in GiftedChat
       setMessages((previousMessages) =>
         GiftedChat.append(previousMessages, newMessageForGiftedChat)
       )
-      
+
       // clear attachImage
       dispatch({ type: 'DELETE_IMAGE' })
     }
   }, [])
-  
+
   const handlerAddImage = () => {
     Actions.camera()
   }
-  
+
   const handlerSelectImage = async () => {
     const result = await launchImageLibrary({ includeBase64: true })
     const base64 = result.assets[0].base64
@@ -228,100 +231,104 @@ export const DialogPage = (props) => {
     const response = resUploadCloudinary.json()
     dispatch({ type: 'ADD_IMAGE', payload: response.url })
   }
-  
+
   const handlerExitDialog = () => {
     // change state to open modal window
     setIsOpenEndDialogWindow(true)
   }
-  
+
   const tranferDialogToComplete = async () => {
     let _newDialogObject = null
     let completeDialogsLength = null
     await database()
-    .ref('chat/active')
-    .orderByChild('uuid')
-    .equalTo(idDialog)
-    .once('value')
-    .then((snapshot) => {
-      snapshot.forEach((child) => {
-        // изменяем сам обьект и сохраняем его по прежнему пути
-        _newDialogObject = JSON.parse(JSON.stringify(child))
-        _newDialogObject.rate = raitings
-        _newDialogObject.status = 'complete'
-        // child.ref.set(_newDialogObject)
-        
-        // удаляем старый диалог в пути chat/active
-        child.ref.remove()
+      .ref('chat/active')
+      .orderByChild('uuid')
+      .equalTo(idDialog)
+      .once('value')
+      .then((snapshot) => {
+        snapshot.forEach((child) => {
+          // изменяем сам обьект и сохраняем его по прежнему пути
+          _newDialogObject = JSON.parse(JSON.stringify(child))
+          _newDialogObject.rate = raitings
+          _newDialogObject.status = 'complete'
+
+          // удаляем старый диалог в пути chat/active
+          child.ref.remove()
+        })
       })
-    })
-    
+
     // узнаем длину последнего элемента в firebase chat/complete
     await database()
-    .ref('chat/complete/')
-    .limitToLast(1)
-    .once('value', (snapshot) => {
-      const lengthDialogs = Object.keys(snapshot.val())
-      completeDialogsLength =
-        Number(lengthDialogs[lengthDialogs.length - 1]) + 1
-    })
-    
+      .ref('chat/complete/')
+      .limitToLast(1)
+      .once('value', (snapshot) => {
+        const lengthDialogs = Object.keys(snapshot.val())
+        completeDialogsLength =
+          Number(lengthDialogs[lengthDialogs.length - 1]) + 1
+      })
+
     // создаем новый диалог в пути chat/complete
     await database()
-    .ref(`chat/complete/${completeDialogsLength}`)
-    .set(_newDialogObject)
+      .ref(`chat/complete/${completeDialogsLength}`)
+      .set(_newDialogObject)
   }
-  
+
   const handlerEndDialog = () => {
     // отправляем в firebase rating и переводим диалог в complete
     tranferDialogToComplete()
     dispatch({ type: 'CLEAR_STATE' })
   }
-  
+
   // FIXME: working on first message of list every send message,
   // there are restrictions on attaching pictures and text
   // TODO: message time drop to bottom
-  // const renderAnimationBubble = (props) => {
-  //   //animation only new messages
-  //   // if (props.currentMessage) {
-  //   //   return (
-  //   //     <Animatable.View animation="fadeInUpBig" duration={400}>
-  //   //       <Bubble {...props} />
-  //   //     </Animatable.View>
-  //   //   )
-  //   // }
-  //   if (typeof props.currentMessage.image !== 'undefined') {
-  //     if(props.currentMessage.image.length >= 1 && props.currentMessage.text.trim().length) {
-  //       const images = props.currentMessage.image
-  //       return (
-  //         <View style={styles.container}>
-  //           <Bubble {...props} />
-  //           {images.map((image, index) => {
-  //             if (typeof image !== 'undefined') {
-  //               return (
-  //                 <Image
-  //                   key={image + index + Date.now()}
-  //                   style={styles.image}
-  //                   alt="Image for dialog"
-  //                   source={{ uri: image }}
-  //                   ignoreFallback={false}
-  //                   fallbackSource={{
-  //                     uri: require('../../assets/image404.jpg'),
-  //                   }}
-  //                 />
-  //               )
-  //             } else {
-  //               props.currentMessage.image = null
-  //               return <Bubble key={index + Date.now()} {...props} />
-  //             }
-  //           })}
-  //         </View>
-  //       )
-  //     }
-  //   }
-  //   props.currentMessage.image = null
-  //   return <Bubble {...props} />
-  // }
-  
+  /*
+  const renderAnimationBubble = (props) => {
+    //animation only new messages
+    if (props.currentMessage)
+      return (
+        <Animatable.View animation="fadeInUpBig" duration={400}>
+          <Bubble {...props} />
+        </Animatable.View>
+      )
+
+    if (typeof props.currentMessage.image !== 'undefined') {
+      if (
+        props.currentMessage.image.length >= 1 &&
+        props.currentMessage.text.trim().length
+      ) {
+        const images = props.currentMessage.image
+        return (
+          <View style={styles.container}>
+            <Bubble {...props} />
+            {images.map((image, index) => {
+              if (typeof image !== 'undefined') {
+                return (
+                  <Image
+                    key={image + index + Date.now()}
+                    style={styles.image}
+                    alt="Image for dialog"
+                    source={{ uri: image }}
+                    ignoreFallback={false}
+                    fallbackSource={{
+                      uri: require('../../assets/image404.jpg')
+                    }}
+                  />
+                )
+              } else {
+                props.currentMessage.image = null
+                return <Bubble key={index + Date.now()} {...props} />
+              }
+            })}
+          </View>
+        )
+      }
+    }
+    props.currentMessage.image = null
+    return <Bubble {...props} />
+  }
+   */
+
   const renderMessageImage = ({ lightboxProps, imageProps, ...props }) => {
     return (
       <View style={styles.container}>
@@ -337,7 +344,7 @@ export const DialogPage = (props) => {
       </View>
     )
   }
-  
+
   const renderLoading = () => {
     if (loading) {
       return (
@@ -345,18 +352,18 @@ export const DialogPage = (props) => {
       )
     }
   }
-  
+
   const ratingCompleted = (rating) => {
     setRaitings(rating)
   }
-  
+
   const handlerInputChange = (_) => {
     pubnub.signal({
       message: 'typing_on_client',
       channel: channels
     })
   }
-  
+
   return (
     <SafeAreaView styles={{ flex: 1 }}>
       <View width="100%" height="100%">
@@ -370,9 +377,9 @@ export const DialogPage = (props) => {
             <GiftedChat
               isTyping={isTyping}
               messages={messages}
-              // renderBubble={renderAnimationBubble}
-              renderMessageImage={renderMessageImage}
               renderLoading={renderLoading}
+              renderMessageImage={renderMessageImage}
+              // renderBubble={renderAnimationBubble}
               renderInputToolbar={() => {
                 return (
                   <SendComponent
@@ -443,3 +450,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain'
   }
 })
+
+DialogPage.propTypes = {
+  props: PropTypes.object
+}

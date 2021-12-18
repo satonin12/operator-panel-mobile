@@ -19,7 +19,6 @@ export const HomePage = () => {
     await firebase
       .database()
       .ref('chat/start/')
-      // .limitToLast(1)
       .once('value', (snapshot) => {
         if (snapshot.val() === 'null' || snapshot.val() === null) {
           lengthActiveDialogs = 0
@@ -51,9 +50,10 @@ export const HomePage = () => {
       .ref(`chat/start/${lengthActiveDialogs}`)
       .set(newDialog, (error) => {
         if (error) {
-          console.log(error)
-        } else {
-          console.log('добавление прошло удачно - смотри firebase')
+          throw new Error({
+            ...error,
+            path: 'HomePage-createDialogFromBack-firebase-database-set'
+          })
         }
       })
   

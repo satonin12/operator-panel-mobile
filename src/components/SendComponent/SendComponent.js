@@ -46,13 +46,13 @@ export const SendComponent = ({
             trigger={(triggerProps) => {
               return badges !== 0 ? (
                 <VStack>
-                  <Badge // bg="red.400"
-                    colorScheme="danger"
-                    rounded="999px"
+                  <Badge
                     mb={-1}
                     mr={-3}
                     zIndex={1}
+                    rounded="999px"
                     variant="solid"
+                    colorScheme="danger"
                     alignSelf="flex-end"
                     _text={{
                       fontSize: 6

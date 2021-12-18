@@ -44,31 +44,6 @@ export const MyAppBar = ({ operator, handlerExit }) => {
   )
 }
 
-// пока что закоментировано тк не стилизована шапка диалога
-// const styles = StyleSheet.create({
-//   messageContainer: {
-//     // display: 'flex',
-//     // flexDirection: 'column-reverse',
-//     // alignItems: 'flex-start',
-//     // justifyContent: 'flex-start'
-//     flex: 1,
-//     // width: 500,
-//     // height: 500,
-//     alignItems: 'flex-start',
-//     alignContent: 'flex-start',
-//     flexDirection: 'ltr',
-//   },
-//   message: {
-//     // flexGrow: 0,
-//     // flexShrink: 0,
-//     // flexBasis: 'auto'
-//     flex: 1,
-//     // width: 100,
-//     // height: 100,
-//     flexShrink: 0,
-//   }
-// })
-
 MyAppBar.propTypes = {
   operator: PropTypes.object,
   handlerExit: PropTypes.func

@@ -1,15 +1,13 @@
-import React, { useRef, useState } from 'react'
+import React from 'react'
 import { RNCamera } from 'react-native-camera'
 import { useCamera } from 'react-native-camera-hooks'
 import { View, StyleSheet, Pressable } from 'react-native'
 import { Text } from 'native-base'
-import RNFetchBlob from 'rn-fetch-blob'
 import {Actions} from 'react-native-router-flux'
 import { uploadImageInCloudniary } from "../../utils/sendToCloudinary";
 
-export const CameraComponent = (props) => {
-  // const [takingPic, setTakingPic] = useState(false)
-  const [{ cameraRef }, { takePicture }] = useCamera(null)
+export const CameraComponent = () => {
+  const { cameraRef } = useCamera(null)
 
   const captureHandle = async () => {
     try {
@@ -21,7 +19,10 @@ export const CameraComponent = (props) => {
       const response = res.json()
       Actions.dialog({ url: response.url })
     } catch (error) {
-      console.log(error)
+      throw new Error({
+        ...error,
+        path: 'CameraComponent'
+      })
     }
   }
 
@@ -30,15 +31,7 @@ export const CameraComponent = (props) => {
       <RNCamera
         ref={cameraRef}
         style={styles.preview}
-        // captureAudio={false}
         type={RNCamera.Constants.Type.back}
-        // androidCameraPermissionOptions={{
-        //   title: 'Permission to use camera',
-        //   message: 'We need your permission to use your camera',
-        //   buttonPositive: 'Ok',
-        //   buttonNegative: 'Cancel'
-        // }}
-        // onPress={takePicture}
       >
         <Pressable
           onPress={() => captureHandle()}

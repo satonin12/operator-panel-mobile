@@ -20,14 +20,14 @@ import { LogBox } from "react-native";
 import * as Sentry from '@sentry/react-native'
 
 const pubnub = new PubNub({
-  publishKey: 'pub-c-4d7ac2be-7395-4fa7-a74d-f5b7efa8e439',
-  subscribeKey: 'sub-c-000c0078-5349-11ec-8a85-9eadcf5c6378',
-  uuid: 'sub-c-000c0078-5349-11ec-8a85-9eadcf5c6378'
+  publishKey: '',
+  subscribeKey: '',
+  uuid: ''
 })
 
 //  запускать только при NODE_ENV==='production'
 Sentry.init({
-  dsn: 'https://19cdb36b586d4e97bb1ae5046ff65564@o1085610.ingest.sentry.io/6096605',
+  dsn: '',
   // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
   // We recommend adjusting this value in production.
   tracesSampleRate: 1.0
